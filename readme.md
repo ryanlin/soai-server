@@ -1,4 +1,20 @@
-# Cyanite.ai Integration Example App
+# Quickstart
+
+To get required packages, run:
+`npm install`
+
+To start the server, run:
+`npm start`
+
+*Note: This only starts the server app. Will still run even if the integrations are not set up, but will error if you try to make requests.*
+
+# To use with soai app
+Install this extension if you use Chrome, turn on when debugging, off when done debugging:
+https://chrome.google.com/webstore/detail/moesif-origin-cors-change/digfbfaphojjndkpccljibejjbppifbc/related
+
+idk if u use another browser.
+
+# Cyanite.ai Integration
 
 This example app showcases how you can integrate the Cyanite.ai API into your own application.
 
