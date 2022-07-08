@@ -6,6 +6,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const fetch = require("node-fetch");
+const { SocketAddress } = require("net");
 
 const env = envalid.cleanEnv(process.env, {
   PORT: envalid.num(),
@@ -124,3 +125,16 @@ app.listen(env.PORT, () => {
     `Server listening on http://localhost:${env.PORT}${WEBHOOK_ROUTE_NAME}`
   );
 });
+
+// Socket.io
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
+io.on('connection', (socket) => {
+  console.log(socket.id)
+  //empty
+})
+server.listen(env.SOCKET_PORT, () => {
+  console.log(
+    `Server Socket listening on http://localhost:${env.SOCKET_PORT}`
+  )
+})
