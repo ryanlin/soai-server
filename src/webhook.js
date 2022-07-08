@@ -6,6 +6,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const fetch = require("node-fetch");
+const fs = require("fs");
 const { SocketAddress } = require("net");
 
 const env = envalid.cleanEnv(process.env, {
@@ -129,9 +130,13 @@ app.listen(env.PORT, () => {
 // Socket.io
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+
 io.on('connection', (socket) => {
   console.log(socket.id)
-  //empty
+
+  socket.on('upload', data => {
+    console.log(data)
+  })
 })
 server.listen(env.SOCKET_PORT, () => {
   console.log(
