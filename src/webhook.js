@@ -38,9 +38,11 @@ const asynchronouslyFetchlibraryTrackResult = async libraryTrackId => {
           audioAnalysisV6 {
             ... on AudioAnalysisV6Finished {
               result {
-                genre {
-                  ambient
-                  blues
+                genreTags
+                moodTags
+                bpmPrediction {
+                  value
+                  confidence
                 }
               }
             }
