@@ -6,14 +6,20 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const fetch = require("node-fetch");
+const cors = require("cors");
 const fs = require("fs");
-const { SocketAddress } = require("net");
+
+app.use(cors({
+  origin: [/http:\/\/localhost:\d+$/]
+}))
 
 const env = envalid.cleanEnv(process.env, {
   PORT: envalid.num(),
   SECRET: envalid.str(),
   ACCESS_TOKEN: envalid.str()
 });
+
+// Cyanite Webhook (/incoming-webhook/)
 
 const isSignatureValid = (secret, signature, message) => {
   const hmac = crypto.createHmac("sha512", secret);
@@ -123,25 +129,39 @@ app.post(WEBHOOK_ROUTE_NAME, (req, res) => {
   return res.sendStatus(200);
 });
 
+
+// REST API for soai client (/api/)
+app.get('/api/', (req, res) => {
+  res.send({ version: '1.0' })
+})
+
+app.post('/api/upload', async (req, res) => {
+  console.log(req)
+  res.send({ message: 'uploaded' })
+})
+
+
+// Begin listening, API and Web hook share a port
 app.listen(env.PORT, () => {
   console.log(
     `Server listening on http://localhost:${env.PORT}${WEBHOOK_ROUTE_NAME}`
   );
 });
 
+
 // Socket.io
-const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+// const server = require('http').createServer(app);
+// const io = require('socket.io')(server);
 
-io.on('connection', (socket) => {
-  console.log(socket.id)
+// io.on('connection', (socket) => {
+//   console.log(socket.id)
 
-  socket.on('upload', data => {
-    console.log(data)
-  })
-})
-server.listen(env.SOCKET_PORT, () => {
-  console.log(
-    `Server Socket listening on http://localhost:${env.SOCKET_PORT}`
-  )
-})
+//   socket.on('upload', data => {
+//     console.log(data)
+//   })
+// })
+// server.listen(env.SOCKET_PORT, () => {
+//   console.log(
+//     `Server Socket listening on http://localhost:${env.SOCKET_PORT}`
+//   )
+// })
