@@ -8,11 +8,25 @@ const app = express();
 const fetch = require("node-fetch");
 const cors = require("cors");
 const fs = require("fs");
+const multer = require("multer");
 
+// Allow cors (client/server requests on same machine)
 app.use(cors({
   origin: [/http:\/\/localhost:\d+$/]
 }))
 
+// Setup storage for uploads
+var storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './uploads');
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  }
+});
+var upload = multer({ storage: storage }).single('file');
+
+// Environment variables from .env
 const env = envalid.cleanEnv(process.env, {
   PORT: envalid.num(),
   SECRET: envalid.str(),
@@ -20,7 +34,6 @@ const env = envalid.cleanEnv(process.env, {
 });
 
 // Cyanite Webhook (/incoming-webhook/)
-
 const isSignatureValid = (secret, signature, message) => {
   const hmac = crypto.createHmac("sha512", secret);
   hmac.write(message);
@@ -150,9 +163,16 @@ app.get('/api/', (req, res) => {
 })
 
 app.post('/api/upload', async (req, res) => {
-  console.log(req)
-  res.send({ message: 'uploaded' })
-})
+  upload(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(500).json(err);
+    } else if (err) {
+      return res.status(500).json(err);
+    }
+
+    return res.status(200).send(req.file);
+  });
+});
 
 
 // Begin listening, API and Web hook share a port

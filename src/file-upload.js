@@ -53,6 +53,7 @@ const requestFileUpload = async () => {
 };
 
 const uploadFile = async (filePath, uploadUrl) => {
+  console.log(Object.keys(fs.createReadStream(filePath)))
   const result = await fetch(uploadUrl, {
     method: "PUT",
     body: fs.createReadStream(filePath),
