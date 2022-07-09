@@ -9,6 +9,7 @@ const fetch = require("node-fetch");
 const cors = require("cors");
 const fs = require("fs");
 const multer = require("multer");
+const file_upload = require('./file-upload.js');
 
 // Allow cors (client/server requests on same machine)
 app.use(cors({
@@ -16,11 +17,14 @@ app.use(cors({
 }))
 
 // Setup storage for uploads
+var upload_destination = "./uploads";
+var upload_filename = ""
 var storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, './uploads');
   },
   filename: (req, file, cb) => {
+    upload_filename = upload_destination + "/" + file.originalname
     cb(null, file.originalname);
   }
 });
@@ -110,8 +114,18 @@ const asynchronouslyFetchlibraryTrackResult = async libraryTrackId => {
       "Content-Type": "application/json"
     }
   }).then(res => res.json());
+  var res_string = JSON.stringify(result, undefined, 2);
+
   console.log("[info] libraryTrack result");
-  console.log(JSON.stringify(result, undefined, 2));
+  console.log(res_string);
+
+  // Unfinished, saves output to file
+  // fs.writeFileSync("/results/" + libraryTrackId + ".json", res_string, (err) => {
+  //   if (err) {
+  //     return console.log(err);
+  //   }
+  //   console.log("file saved!");
+  // })
 };
 
 app.use(bodyParser.json());
@@ -163,14 +177,15 @@ app.get('/api/', (req, res) => {
 })
 
 app.post('/api/upload', async (req, res) => {
-  upload(req, res, (err) => {
+  upload(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       return res.status(500).json(err);
     } else if (err) {
       return res.status(500).json(err);
     }
 
-    return res.status(200).send(req.file);
+    const song_id = await file_upload.getSongProfile(upload_filename)
+    res.status(200).send(song_id);
   });
 });
 

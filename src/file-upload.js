@@ -3,6 +3,7 @@
 const envalid = require("envalid");
 const fs = require("fs");
 const fetch = require("node-fetch");
+const { resourceLimits } = require("worker_threads");
 
 const { API_URL, ACCESS_TOKEN } = envalid.cleanEnv(process.env, {
   API_URL: envalid.str(),
@@ -53,7 +54,6 @@ const requestFileUpload = async () => {
 };
 
 const uploadFile = async (filePath, uploadUrl) => {
-  console.log(Object.keys(fs.createReadStream(filePath)))
   const result = await fetch(uploadUrl, {
     method: "PUT",
     body: fs.createReadStream(filePath),
@@ -88,6 +88,18 @@ const libraryTrackCreate = async fileUploadRequestId => {
   return result.data.libraryTrackCreate;
 };
 
+const getSongProfile = async filePath => {
+  console.log("[info] request file upload");
+  const { id, uploadUrl } = await requestFileUpload(filePath);
+  console.log(uploadUrl);
+
+  console.log("[info] upload file");
+  await uploadFile(filePath, uploadUrl);
+  console.log("[info] create InDepthAnalysis");
+  const analysis = await libraryTrackCreate(id);
+  return analysis;
+}
+
 const main = async filePath => {
   console.log("[info] request file upload");
   const { id, uploadUrl } = await requestFileUpload(filePath);
@@ -99,7 +111,11 @@ const main = async filePath => {
   await libraryTrackCreate(id);
 };
 
-main(process.argv[2]).catch(err => {
-  console.error(err);
-  process.exitCode = 1;
-});
+// main(process.argv[2]).catch(err => {
+//   console.error(err);
+//   process.exitCode = 1;
+// });
+
+module.exports = {
+  getSongProfile
+}
