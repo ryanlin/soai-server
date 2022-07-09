@@ -44,6 +44,20 @@ const asynchronouslyFetchlibraryTrackResult = async libraryTrackId => {
           audioAnalysisV6 {
             ... on AudioAnalysisV6Finished {
               result {
+                segments {
+                  timestamps
+                  genre {
+                    classical
+                    ambient
+                    blues
+                  }
+                  mood {
+                    calm
+                    chilled
+                    dark
+                    sexy
+                  }
+                }
                 genreTags
                 moodTags
                 bpmPrediction {
