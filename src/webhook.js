@@ -119,6 +119,8 @@ const asynchronouslyFetchlibraryTrackResult = async libraryTrackId => {
   console.log("[info] libraryTrack result");
   console.log(res_string);
 
+  return result;
+
   // Unfinished, saves output to file
   // fs.writeFileSync("/results/" + libraryTrackId + ".json", res_string, (err) => {
   //   if (err) {
@@ -189,6 +191,19 @@ app.post('/api/upload', async (req, res) => {
   });
 });
 
+app.post('/api/songdata', async (req, res) => {
+  console.log(req.body)
+  const libraryTrackID = req.body.id
+  const song_data = await asynchronouslyFetchlibraryTrackResult(libraryTrackID).catch(
+    error => {
+      console.log(error)
+      res.status(500).json(error)
+    }
+  )
+
+  console.log("[info] sending song data")
+  res.status(200).send(song_data)
+})
 
 // Begin listening, API and Web hook share a port
 app.listen(env.PORT, () => {
