@@ -8,11 +8,29 @@ const app = express();
 const fetch = require("node-fetch");
 const cors = require("cors");
 const fs = require("fs");
+const multer = require("multer");
+const file_upload = require('./file-upload.js');
 
+// Allow cors (client/server requests on same machine)
 app.use(cors({
   origin: [/http:\/\/localhost:\d+$/]
 }))
 
+// Setup storage for uploads
+var upload_destination = "./uploads";
+var upload_filename = ""
+var storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './uploads');
+  },
+  filename: (req, file, cb) => {
+    upload_filename = upload_destination + "/" + file.originalname
+    cb(null, file.originalname);
+  }
+});
+var upload = multer({ storage: storage }).single('file');
+
+// Environment variables from .env
 const env = envalid.cleanEnv(process.env, {
   PORT: envalid.num(),
   SECRET: envalid.str(),
@@ -20,7 +38,6 @@ const env = envalid.cleanEnv(process.env, {
 });
 
 // Cyanite Webhook (/incoming-webhook/)
-
 const isSignatureValid = (secret, signature, message) => {
   const hmac = crypto.createHmac("sha512", secret);
   hmac.write(message);
@@ -97,8 +114,20 @@ const asynchronouslyFetchlibraryTrackResult = async libraryTrackId => {
       "Content-Type": "application/json"
     }
   }).then(res => res.json());
+  var res_string = JSON.stringify(result, undefined, 2);
+
   console.log("[info] libraryTrack result");
-  console.log(JSON.stringify(result, undefined, 2));
+  console.log(res_string);
+
+  return result;
+
+  // Unfinished, saves output to file
+  // fs.writeFileSync("/results/" + libraryTrackId + ".json", res_string, (err) => {
+  //   if (err) {
+  //     return console.log(err);
+  //   }
+  //   console.log("file saved!");
+  // })
 };
 
 app.use(bodyParser.json());
@@ -150,10 +179,31 @@ app.get('/api/', (req, res) => {
 })
 
 app.post('/api/upload', async (req, res) => {
-  console.log(req)
-  res.send({ message: 'uploaded' })
-})
+  upload(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(500).json(err);
+    } else if (err) {
+      return res.status(500).json(err);
+    }
 
+    const song_id = await file_upload.getSongProfile(upload_filename)
+    res.status(200).send(song_id);
+  });
+});
+
+app.post('/api/songdata', async (req, res) => {
+  console.log(req.body)
+  const libraryTrackID = req.body.id
+  const song_data = await asynchronouslyFetchlibraryTrackResult(libraryTrackID).catch(
+    error => {
+      console.log(error)
+      res.status(500).json(error)
+    }
+  )
+
+  console.log("[info] sending song data")
+  res.status(200).send(song_data)
+})
 
 // Begin listening, API and Web hook share a port
 app.listen(env.PORT, () => {
