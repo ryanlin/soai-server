@@ -172,7 +172,6 @@ app.post(WEBHOOK_ROUTE_NAME, (req, res) => {
   return res.sendStatus(200);
 });
 
-
 // REST API for soai client (/api/)
 app.get('/api/', (req, res) => {
   res.send({ version: '1.0' })
@@ -203,6 +202,13 @@ app.post('/api/songdata', async (req, res) => {
 
   console.log("[info] sending song data")
   res.status(200).send(song_data)
+})
+
+app.post('/api/getsong', async (req, res) => {
+  const song_name = req.filename
+  const song_file = fs.readFile("../uploads/" + song_name)
+
+  res.status(200).send()
 })
 
 // Begin listening, API and Web hook share a port
